@@ -95,6 +95,7 @@ def main():
     vx, vy = +5, +5 #爆弾の横速度, 縦速度
     clock = pg.time.Clock()
     tmr = 0
+    
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT: 
@@ -123,22 +124,26 @@ def main():
         if check_bound(kk_rct) != (True, True): #画面外なら
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1]) #移動を無かったことにする
         screen.blit(kk_img, kk_rct)
+        
         idx = min(tmr // 500, 9) #レベルを切換え
+        
+        #爆弾の拡大処理
         bb_img = bb_imgs[idx]
         center = bb_rct.center
         bb_rct.width = bb_img.get_rect().width #横幅を更新
         bb_rct.height = bb_img.get_rect().height #縦幅を更新
         bb_rct.center = center
         
+        #爆弾のはみ出し修正
         yoko, tate = check_bound(bb_rct) 
         if not yoko: #横方向にはみ出していたら
             vx *= -1 #横座標反転
         if not tate: #縦方向にはみ出していたら
             vy *= -1 #縦座標反転 
         
+        #爆弾加速処理
         avx = vx*bb_accs[idx] #vxを加速度分増加
         avy = vy*bb_accs[idx] #vyを加速度分増加
-        
         bb_rct.move_ip(avx, avy) #avx, avyで移動
         
         screen.blit(bb_img, bb_rct) #bb_imgをbb_rctで描画
