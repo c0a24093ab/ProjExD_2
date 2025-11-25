@@ -36,7 +36,7 @@ def gameover(screen: pg.Surface) -> None:
     black.set_alpha(180) # 透明度を設定
     
     font = pg.font.Font(None, 80)
-    txt = font.render("Game Over", True, (255, 255, 255))
+    txt = font.render("Game Over", True, (255, 255, 255)) #文字情報
     txt_rct = txt.get_rect()
     txt_rct.center = WIDTH / 2, HEIGHT / 2
     black.blit(txt, txt_rct) #"Game Over"の描画
@@ -55,6 +55,23 @@ def gameover(screen: pg.Surface) -> None:
     return
     
     
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    爆弾画像リストと加速度リストの初期化
+    引数：なし
+    戻り値：爆弾画像リスト, 加速度リスト
+    徐々に数が増える
+    """
+    bb_imgs = []
+    for r in range(1, 11):
+        bb_img = pg.Surface((20 * r, 20 * r)) #空のSurface
+        pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r) #半径10rの赤い円を描画
+        bb_img.set_colorkey((0, 0, 0)) #黒い部分を透過
+        bb_imgs.append(bb_img)
+    bb_accs = [a for a in range(1, 11)]
+    return bb_imgs, bb_accs #リストを出力
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -65,6 +82,8 @@ def main():
     bb_img = pg.Surface((20, 20)) #空のSurface
     pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10) #半径10の赤い円を描画
     bb_img.set_colorkey((0, 0, 0)) #黒い部分を透過
+    bb_imgs, bb_accs = init_bb_imgs()
+    bb_img = bb_imgs[0]
     bb_rct = bb_img.get_rect() #爆弾Rect
     bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT) #乱数爆弾座標
     vx, vy = +5, +5 #爆弾の横速度, 縦速度
@@ -98,12 +117,24 @@ def main():
         if check_bound(kk_rct) != (True, True): #画面外なら
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1]) #移動を無かったことにする
         screen.blit(kk_img, kk_rct)
-        bb_rct.move_ip(vx, vy)
+        idx = min(tmr // 500, 9) #レベルを切換え
+        bb_img = bb_imgs[idx]
+        center = bb_rct.center
+        bb_rct.width = bb_img.get_rect().width #横幅を更新
+        bb_rct.height = bb_img.get_rect().height #縦幅を更新
+        bb_rct.center = center
+        
         yoko, tate = check_bound(bb_rct) 
         if not yoko: #横方向にはみ出していたら
             vx *= -1 #横座標反転
         if not tate: #縦方向にはみ出していたら
             vy *= -1 #縦座標反転 
+        
+        avx = vx*bb_accs[idx] #vxを加速度分増加
+        avy = vy*bb_accs[idx] #vyを加速度分増加
+        
+        bb_rct.move_ip(avx, avy) #avx, avyで移動
+        
         screen.blit(bb_img, bb_rct) #bb_imgをbb_rctで描画
         if key_lst[pg.K_ESCAPE]:
             gameover(screen)
