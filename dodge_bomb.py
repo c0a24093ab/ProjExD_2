@@ -3,6 +3,7 @@ import random
 import sys
 import pygame as pg
 
+
 WIDTH, HEIGHT = 1100, 650
 DELTA = {
     pg.K_UP: (0, -5),
@@ -13,6 +14,20 @@ DELTA = {
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
+def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
+    """""
+    引数:こうかとんRectか爆弾Rect
+    戻り値:タプル（横方向判定結果, 縦方向判定結果）
+    画面内ならTrue, 画面外ならFalse
+    """""
+    yoko, tate = True, True
+    if rct.left < 0 or WIDTH < rct.right: #横方向のはみ出し判定
+        yoko = False
+    if rct.top < 0 or HEIGHT < rct.bottom: #縦方向のはみ出し判定
+        tate = False
+    return yoko, tate
+ 
+    
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -49,8 +64,15 @@ def main():
                 sum_mv[0] += mv[0] #横方向の移動量
                 sum_mv[1] += mv[1] #縦方向の移動量
         kk_rct.move_ip(sum_mv)
+        if check_bound(kk_rct) != (True, True): #画面外なら
+            kk_rct.move_ip(-sum_mv[0], -sum_mv[1]) #移動を無かったことにする
         screen.blit(kk_img, kk_rct)
         bb_rct.move_ip(vx, vy)
+        yoko, tate = check_bound(bb_rct) 
+        if not yoko: #横方向にはみ出していたら
+            vx *= -1 #横座標反転
+        if not tate: #縦方向にはみ出していたら
+            vy *= -1 #縦座標反転 
         screen.blit(bb_img, bb_rct) #bb_imgをbb_rctで描画
         pg.display.update()
         tmr += 1
