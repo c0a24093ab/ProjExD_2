@@ -30,6 +30,12 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
  
     
 def gameover(screen: pg.Surface) -> None:
+    """
+    引数:画面Surface
+    戻り値:なし
+    ゲームオーバー画面の表示
+    blackに文字と画像をblitする
+    """
     black = pg.Surface((WIDTH, HEIGHT)) #空のSurface
     pg.draw.rect(black, (0, 0, 0), (0, 0, WIDTH, HEIGHT)) #黒で塗りつぶし
     
@@ -136,8 +142,8 @@ def main():
         bb_rct.move_ip(avx, avy) #avx, avyで移動
         
         screen.blit(bb_img, bb_rct) #bb_imgをbb_rctで描画
-        if key_lst[pg.K_ESCAPE]:
-            gameover(screen)
+        if key_lst[pg.K_ESCAPE]: #ESCキーが押されたら
+            gameover(screen) #ゲームオーバー画面表示
             return
         pg.display.update()
         tmr += 1
